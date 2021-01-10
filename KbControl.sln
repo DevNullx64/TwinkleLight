@@ -1,0 +1,36 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KbControl", "KbControl\KbControl.csproj", "{2CA3A994-370B-4CA4-A126-FCFA7A6C3B58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KbControlOn", "KbControlOn\KbControlOn.csproj", "{E3971508-8EAC-43DC-A2EC-CD0B2FDE4032}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KbService", "KbService\KbService.csproj", "{7C4905A7-FD51-4DE7-888C-BF4FFDDE509C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2CA3A994-370B-4CA4-A126-FCFA7A6C3B58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CA3A994-370B-4CA4-A126-FCFA7A6C3B58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CA3A994-370B-4CA4-A126-FCFA7A6C3B58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CA3A994-370B-4CA4-A126-FCFA7A6C3B58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3971508-8EAC-43DC-A2EC-CD0B2FDE4032}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3971508-8EAC-43DC-A2EC-CD0B2FDE4032}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3971508-8EAC-43DC-A2EC-CD0B2FDE4032}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3971508-8EAC-43DC-A2EC-CD0B2FDE4032}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C4905A7-FD51-4DE7-888C-BF4FFDDE509C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C4905A7-FD51-4DE7-888C-BF4FFDDE509C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C4905A7-FD51-4DE7-888C-BF4FFDDE509C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C4905A7-FD51-4DE7-888C-BF4FFDDE509C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F15FF396-E210-4B39-851D-C140B3D6548A}
+	EndGlobalSection
+EndGlobal
