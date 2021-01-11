@@ -42,33 +42,33 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcpiDriver.cs" />
+    <Compile Include="Form1_old.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1_old.Designer.cs">
+      <DependentUpon>Form1_old.cs</DependentUpon>
+    </Compile>
+    <Compile Include="KeyboardHookLib.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
-    <Compile Include="KeyboardHookLib.cs" />
-    <Compile Include="Main.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Main.Designer.cs">
-      <DependentUpon>Main.cs</DependentUpon>
-    </Compile>
     <Compile Include="MouseHookLib.cs" />
     <Compile Include="Icon.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="Properties\Resources.cs" />
+    <Compile Include="Properties\Resources_.cs" />
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Form1.resx" />
+    <EmbeddedResource Include="Form1_old.resx" />
     <EmbeddedResource Include="Icon.resx" />
-    <EmbeddedResource Include="Main.resx">
-      <DependentUpon>Main.cs</DependentUpon>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx" />
   </ItemGroup>

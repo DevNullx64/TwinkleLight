@@ -16,12 +16,12 @@ namespace LedControl.Properties
   [GeneratedCode("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
   [DebuggerNonUserCode]
   [CompilerGenerated]
-  internal class Resources
+  internal class Resources_
   {
     private static ResourceManager resourceMan;
     private static CultureInfo resourceCulture;
 
-    internal Resources()
+    internal Resources_()
     {
     }
 
@@ -30,17 +30,17 @@ namespace LedControl.Properties
     {
       get
       {
-        if (LedControl.Properties.Resources.resourceMan == null)
-          LedControl.Properties.Resources.resourceMan = new ResourceManager("LedControl.Properties.Resources", typeof (LedControl.Properties.Resources).Assembly);
-        return LedControl.Properties.Resources.resourceMan;
+        if (LedControl.Properties.Resources_.resourceMan == null)
+          LedControl.Properties.Resources_.resourceMan = new ResourceManager("LedControl.Properties.Resources", typeof (LedControl.Properties.Resources_).Assembly);
+        return LedControl.Properties.Resources_.resourceMan;
       }
     }
 
     [EditorBrowsable(EditorBrowsableState.Advanced)]
     internal static CultureInfo Culture
     {
-      get => LedControl.Properties.Resources.resourceCulture;
-      set => LedControl.Properties.Resources.resourceCulture = value;
+      get => LedControl.Properties.Resources_.resourceCulture;
+      set => LedControl.Properties.Resources_.resourceCulture = value;
     }
   }
 }
