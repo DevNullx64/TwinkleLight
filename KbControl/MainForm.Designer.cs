@@ -31,9 +31,8 @@ namespace LedControl
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.contextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.pbSelectColor = new System.Windows.Forms.PictureBox();
             this.pbLightColor = new System.Windows.Forms.PictureBox();
             this.pnlOptions = new System.Windows.Forms.Panel();
@@ -41,32 +40,29 @@ namespace LedControl
             this.chkDisableTP = new System.Windows.Forms.CheckBox();
             this.chkEnableLight = new System.Windows.Forms.CheckBox();
             this.rbLightDynamic = new System.Windows.Forms.RadioButton();
-            this.rbLightSingle = new System.Windows.Forms.RadioButton();
-            this.contextMenuStrip1.SuspendLayout();
+            this.rbLightStatic = new System.Windows.Forms.RadioButton();
+            this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenu.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pbSelectColor)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLightColor)).BeginInit();
             this.pnlOptions.SuspendLayout();
             this.SuspendLayout();
             // 
-            // contextMenuStrip1
+            // contextMenu
             // 
-            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.contextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openToolStripMenuItem,
             this.exitToolStripMenuItem});
-            this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(94, 26);
+            this.contextMenu.Name = "contextMenuStrip1";
+            this.contextMenu.Size = new System.Drawing.Size(104, 48);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(93, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.ExitToolStripMenuItem_Click);
-            // 
-            // imageList1
-            // 
-            this.imageList1.ColorDepth = System.Windows.Forms.ColorDepth.Depth8Bit;
-            this.imageList1.ImageSize = new System.Drawing.Size(16, 16);
-            this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
             // 
             // pbSelectColor
             // 
@@ -84,7 +80,7 @@ namespace LedControl
             // 
             // pbLightColor
             // 
-            this.pbLightColor.BackColor = System.Drawing.Color.DimGray;
+            this.pbLightColor.BackColor = System.Drawing.Color.Red;
             this.pbLightColor.Location = new System.Drawing.Point(96, 37);
             this.pbLightColor.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.pbLightColor.Name = "pbLightColor";
@@ -99,7 +95,7 @@ namespace LedControl
             this.pnlOptions.Controls.Add(this.chkDisableTP);
             this.pnlOptions.Controls.Add(this.chkEnableLight);
             this.pnlOptions.Controls.Add(this.rbLightDynamic);
-            this.pnlOptions.Controls.Add(this.rbLightSingle);
+            this.pnlOptions.Controls.Add(this.rbLightStatic);
             this.pnlOptions.Controls.Add(this.pbLightColor);
             this.pnlOptions.Location = new System.Drawing.Point(186, 16);
             this.pnlOptions.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
@@ -138,6 +134,8 @@ namespace LedControl
             // chkEnableLight
             // 
             this.chkEnableLight.AutoSize = true;
+            this.chkEnableLight.Checked = true;
+            this.chkEnableLight.CheckState = System.Windows.Forms.CheckState.Checked;
             this.chkEnableLight.Font = new System.Drawing.Font("Calibri", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.chkEnableLight.ForeColor = System.Drawing.Color.White;
             this.chkEnableLight.Location = new System.Drawing.Point(3, 13);
@@ -162,22 +160,38 @@ namespace LedControl
             this.rbLightDynamic.TabStop = true;
             this.rbLightDynamic.Text = "Dynamic";
             this.rbLightDynamic.UseVisualStyleBackColor = true;
-            this.rbLightDynamic.CheckedChanged += new System.EventHandler(this.RadioButton2_CheckedChanged);
+            this.rbLightDynamic.CheckedChanged += new System.EventHandler(this.rbLightDynamic_CheckedChanged);
             // 
-            // rbLightSingle
+            // rbLightStatic
             // 
-            this.rbLightSingle.AutoSize = true;
-            this.rbLightSingle.Font = new System.Drawing.Font("Calibri", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.rbLightSingle.ForeColor = System.Drawing.Color.White;
-            this.rbLightSingle.Location = new System.Drawing.Point(7, 33);
-            this.rbLightSingle.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.rbLightSingle.Name = "rbLightSingle";
-            this.rbLightSingle.Size = new System.Drawing.Size(92, 22);
-            this.rbLightSingle.TabIndex = 0;
-            this.rbLightSingle.TabStop = true;
-            this.rbLightSingle.Text = "Singleness";
-            this.rbLightSingle.UseVisualStyleBackColor = true;
-            this.rbLightSingle.CheckedChanged += new System.EventHandler(this.RadioButton1_CheckedChanged);
+            this.rbLightStatic.AutoSize = true;
+            this.rbLightStatic.Checked = true;
+            this.rbLightStatic.Font = new System.Drawing.Font("Calibri", 10.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.rbLightStatic.ForeColor = System.Drawing.Color.White;
+            this.rbLightStatic.Location = new System.Drawing.Point(7, 33);
+            this.rbLightStatic.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
+            this.rbLightStatic.Name = "rbLightStatic";
+            this.rbLightStatic.Size = new System.Drawing.Size(92, 22);
+            this.rbLightStatic.TabIndex = 0;
+            this.rbLightStatic.TabStop = true;
+            this.rbLightStatic.Text = "Singleness";
+            this.rbLightStatic.UseVisualStyleBackColor = true;
+            this.rbLightStatic.CheckedChanged += new System.EventHandler(this.rbLightStatic_CheckedChanged);
+            // 
+            // notifyIcon
+            // 
+            this.notifyIcon.ContextMenuStrip = this.contextMenu;
+            this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+            this.notifyIcon.Text = "Twinkle Light";
+            this.notifyIcon.Visible = true;
+            this.notifyIcon.MouseClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIcon_MouseClick);
+            // 
+            // openToolStripMenuItem
+            // 
+            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.OpenToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -190,12 +204,15 @@ namespace LedControl
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.Name = "MainForm";
             this.Opacity = 0.7D;
+            this.ShowIcon = false;
+            this.ShowInTaskbar = false;
             this.Text = "Main";
+            this.TopMost = true;
             this.TransparencyKey = System.Drawing.SystemColors.Control;
             this.Load += new System.EventHandler(this.Main_Load);
             this.Shown += new System.EventHandler(this.Main_Shown);
             this.VisibleChanged += new System.EventHandler(this.Main_VisibleChanged);
-            this.contextMenuStrip1.ResumeLayout(false);
+            this.contextMenu.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pbSelectColor)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pbLightColor)).EndInit();
             this.pnlOptions.ResumeLayout(false);
@@ -205,9 +222,8 @@ namespace LedControl
         }
 
         #endregion
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ContextMenuStrip contextMenu;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.PictureBox pbSelectColor;
         private System.Windows.Forms.PictureBox pbLightColor;
         private System.Windows.Forms.Panel pnlOptions;
@@ -215,6 +231,8 @@ namespace LedControl
         private System.Windows.Forms.CheckBox chkDisableTP;
         private System.Windows.Forms.CheckBox chkEnableLight;
         private System.Windows.Forms.RadioButton rbLightDynamic;
-        private System.Windows.Forms.RadioButton rbLightSingle;
+        private System.Windows.Forms.RadioButton rbLightStatic;
+        private System.Windows.Forms.NotifyIcon notifyIcon;
+        private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
     }
 }

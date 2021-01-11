@@ -18,46 +18,13 @@ namespace LedControl
 {
     public partial class MainForm : Form
     {
-        #region old interesting dead code
-        private const int AW_HOR_POSITIVE = 0x00000001;
-        private const int AW_HOR_NEGATIVE = 0x00000002;
-        private const int AW_VER_POSITIVE = 0x00000004;
-        private const int AW_VER_NEGATIVE = 0x00000008;
-        private const int AW_CENTER = 0x00000010;
-        private const int AW_HIDE = 0x00010000;
-        private const int AW_ACTIVE = 0x00020000;
-        private const int AW_SLIDE = 0x00040000;
-        private const int AW_BLEND = 0x00080000;
-
-        [DllImport("user32")]
-        private static extern bool AnimateWindow(IntPtr hwnd, int dwTime, int dwFlags);
-
-        public static Bitmap KiResizeImage(Bitmap bmp, int newW, int newH)
-        {
-            try
-            {
-                Bitmap bitmap = new Bitmap(newW, newH);
-                Graphics graphics = Graphics.FromImage((Image)bitmap);
-                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                graphics.DrawImage((Image)bmp, new Rectangle(0, 0, newW, newH), new Rectangle(0, 0, bmp.Width, bmp.Height), GraphicsUnit.Pixel);
-                graphics.Dispose();
-                return bitmap;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-        #endregion
+        private const uint TRUE = 0x01000000U;
+        private const uint FALSE = 0x00000000U;
 
         private CONFIG_DATA ConfigData;
 
         public AcpiDriver acpi = new AcpiDriver();
         private MouseHookLib _mouseHook;
-        private bool MouseHookInstalled;
-
-        public uint CurrentSetValue;
-        public uint CurrentGetValue;
 
         private void button1_Click_1(object sender, EventArgs e)
         {
@@ -66,16 +33,108 @@ namespace LedControl
             acpi.AcpiUnLoadDll();
         }
 
-        private static ManagementObject KBC0_0 = new ManagementObject("root\\WMI", "Acpi_WMI_KBC.InstanceName='ACPI\\PNP0C14\\KBC0_0'", null);
-        private static readonly ManagementBaseObject KBC0_0_Parameters = KBC0_0.GetMethodParameters("Set");
+        private const string WMIRoot = "root\\WMI";
 
-        private uint RGB
+        private byte OutNormalize(byte value) => (byte)(value * 39 / byte.MaxValue);
+        private byte InNormalize(byte value) => (byte)(value * byte.MaxValue / 39);
+
+        private static readonly ManagementObject KBC0_0_ = new ManagementObject(WMIRoot, "Acpi_WMI_KBC.InstanceName='ACPI\\PNP0C14\\KBC0_0'", null);
+        private static readonly ManagementBaseObject KBC0_0_Parameters = KBC0_0_.GetMethodParameters("Set");
+        private uint KBC0_0
         {
-            get => (uint)KBC0_0.InvokeMethod("Get", null, null)["Data"];
+            get => (uint)KBC0_0_.InvokeMethod("Get", null, null)["Data"];
             set
             {
+                try { 
                 KBC0_0_Parameters["Data"] = value;
-                KBC0_0.InvokeMethod("Set", KBC0_0_Parameters, null);
+                KBC0_0_.InvokeMethod("Set", KBC0_0_Parameters, null);
+                }
+                catch (ManagementException ex)
+                {
+                    MessageBox.Show(ex.Message, "LedColor", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    Exit();
+                }
+
+            }
+        }
+
+        public enum LedModeState { Off, Static, Dynamic};
+        public LedModeState Mode
+        {
+            get
+            {
+                uint value = KBC0_0;
+                if ((value & 0xFF000000U) == TRUE)
+                    return LedModeState.Dynamic;
+                else if ((value & 0x00FFFFFF) == 0)
+                    return LedModeState.Off;
+                else
+                    return LedModeState.Static;
+            }
+            set
+            {
+                if (value != Mode)
+                {
+                    if (value == LedModeState.Off)
+                        KBC0_0 = 0x02000000;
+                    else if (value == LedModeState.Dynamic)
+                        KBC0_0 = TRUE;
+                    else
+                    {
+                        Color v = Color.FromArgb(ConfigData.SingleColorRGB);
+                        KBC0_0 = 0x02000000U | (uint)(OutNormalize(v.R) << 16 | OutNormalize(v.G) << 8 | OutNormalize(v.B));
+                    }
+                }
+            }
+        }
+
+        public Color LedColor
+        {
+            get
+            {
+                uint value = KBC0_0;
+                return Color.FromArgb(InNormalize((byte)(value >> 16)), InNormalize((byte)(value >> 8)), InNormalize((byte)value));
+            }
+            set
+            {
+                pbLightColor.BackColor = value;
+                ConfigData.SingleColorRGB = pbLightColor.BackColor.ToArgb();
+                if (Mode == LedModeState.Static)
+                    KBC0_0 = 0x02000000U | (uint)(OutNormalize(value.R) << 16 | OutNormalize(value.G) << 8 | OutNormalize(value.B));
+                ConfigData.Save();
+            }
+        }
+
+
+        public static ManagementObject KBC0_1 = new ManagementObject(WMIRoot, "Acpi_WMI_KBC.InstanceName='ACPI\\PNP0C14\\KBC0_1'", null);
+        public static ManagementBaseObject KBC0_1_Parameters = KBC0_1.GetMethodParameters("Set");
+        private void SwitchTp(bool parameter)
+        {
+            try
+            {
+                KBC0_1_Parameters["Data"] = parameter ? TRUE : FALSE;
+                KBC0_1.InvokeMethod("Set", KBC0_1_Parameters, null);
+            }
+            catch (ManagementException ex)
+            {
+                MessageBox.Show(ex.Message, "SwitchTP", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Exit();
+            }
+        }
+
+        public static ManagementObject KBC0_2 = new ManagementObject(WMIRoot, "Acpi_WMI_KBC.InstanceName='ACPI\\PNP0C14\\KBC0_2'", null);
+        public static ManagementBaseObject KBC0_2_Parameters = KBC0_2.GetMethodParameters("Set");
+        private void Dust(bool parameter)
+        {
+            try
+            {
+                KBC0_2_Parameters["Data"] = parameter ? TRUE : FALSE;
+                KBC0_2.InvokeMethod("Set", KBC0_2_Parameters, null);
+            }
+            catch (ManagementException ex)
+            {
+                MessageBox.Show(ex.Message, "Dust", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Exit();
             }
         }
 
@@ -91,40 +150,22 @@ namespace LedControl
             try
             {
                 ConfigData = CONFIG_DATA.Load();
-                Color color = Color.FromArgb(ConfigData.SingleColorRGB);
-                pbLightColor.BackColor = color;
-                if (ConfigData.Mode == 2)
+                Color color = Color.FromArgb((int)ConfigData.SingleColorRGB);
+                LedColor = color;
+                if (ConfigData.Mode == 1)
                 {
-                    rbLightSingle.Checked = true;
-                    rbLightDynamic.Checked = false;
-                }
-                else if (ConfigData.Mode == 1)
-                {
-                    rbLightSingle.Checked = false;
+                    rbLightStatic.Checked = false;
                     rbLightDynamic.Checked = true;
                 }
-                int autoStartUp = ConfigData.AutoStartUp;
-                int startUpMinimize = ConfigData.StartUpMinimize;
-                if (ConfigData.BacklightOn == 0)
-                {
-                    rbLightSingle.Enabled = false;
-                    rbLightDynamic.Enabled = false;
-                    chkEnableLight.Checked = false;
-                }
-                else
-                {
-                    rbLightSingle.Enabled = true;
-                    rbLightDynamic.Enabled = true;
-                    chkEnableLight.Checked = true;
-                }
+                bool backlightOn = ConfigData.BacklightOn != 0;
+                rbLightStatic.Enabled = backlightOn;
+                rbLightDynamic.Enabled = backlightOn;
+                chkEnableLight.Checked = backlightOn;
                 chkDustMode.Checked = ConfigData.Dustenable == 1;
             }
-            catch (IOException ex)
+            catch (IOException)
             {
-                rbLightSingle.Enabled = true;
-                rbLightDynamic.Enabled = true;
-                chkEnableLight.Checked = true;
-                ConfigData.SingleColorRGB = 0xFE0000;
+                ConfigData.SingleColorRGB = 0xFF0000;
             }
             Directory.SetCurrentDirectory(currentDirectory);
         }
@@ -132,11 +173,6 @@ namespace LedControl
         private void Main_Load(object sender, EventArgs e)
         {
             ConfigInitialization();
-            ShowInTaskbar = false;
-            TopMost = true;
-            Visible = true;
-            //Image image = imageList1.Images[0];
-            //pictureBox1.Image = new Bitmap(image, width, height);
             InstallHookMouse();
         }
 
@@ -144,11 +180,9 @@ namespace LedControl
         {
             public int Mode;
             public int SingleColorRGB;
-            public int AutoStartUp;
             public int StartUpMinimize;
             public int BacklightOn;
             public int Dustenable;
-            public int Reserve7;
 
             public static byte[] StructToBytes(object structObj)
             {
@@ -200,58 +234,39 @@ namespace LedControl
             }
         }
 
-        public uint CalValue() =>
-            !chkEnableLight.Checked ?
-            0x02000000 :
-            (uint)ConfigData.Mode << 24 |
-            (((uint)ConfigData.SingleColorRGB >> 16) & byte.MaxValue) * 39 / byte.MaxValue << 16 |
-            (((uint)ConfigData.SingleColorRGB >> 8) & byte.MaxValue) * 39 / byte.MaxValue << 8 |
-            ((uint)ConfigData.SingleColorRGB & byte.MaxValue) * 39 / byte.MaxValue;
-
-        public static ManagementObject KBC0_1 = new ManagementObject("root\\WMI", "Acpi_WMI_KBC.InstanceName='ACPI\\PNP0C14\\KBC0_1'", null);
-        public static ManagementBaseObject KBC0_1_Parameters = KBC0_1.GetMethodParameters("Set");
-        private void SwitchTp(bool parameter)
-        {
-            try
-            {
-                KBC0_1_Parameters["Data"] = parameter ? 0x1000000 : 0;
-                KBC0_1.InvokeMethod("Set", KBC0_1_Parameters, null);
-                CurrentSetValue = (uint)KBC0_1_Parameters["Data"];
-            }
-            catch (ManagementException ex)
-            {
-            }
-        }
-
-        public static ManagementObject KBC0_2 = new ManagementObject("root\\WMI", "Acpi_WMI_KBC.InstanceName='ACPI\\PNP0C14\\KBC0_2'", null);
-        public static ManagementBaseObject KBC0_2_Parameters = KBC0_2.GetMethodParameters("Set");
-        private void Dust(bool parameter)
-        {
-            KBC0_2_Parameters["Data"] = parameter ? 0x1000000 : 0;
-            KBC0_2.InvokeMethod("Set", KBC0_2_Parameters, null);
-            CurrentSetValue = (uint)KBC0_2_Parameters["Data"];
-        }
-
         private void CheckBox3_CheckedChanged(object sender, EventArgs e)
         {
-            rbLightSingle.Enabled = chkEnableLight.Checked;
+            if (chkEnableLight.Checked)
+            {
+                if (rbLightStatic.Checked)
+                    Mode = LedModeState.Static;
+                else
+                    Mode = LedModeState.Dynamic;
+            }
+            else
+                Mode = LedModeState.Off;
+            rbLightStatic.Enabled = chkEnableLight.Checked;
             rbLightDynamic.Enabled = chkEnableLight.Checked;
-            ConfigData.BacklightOn = (chkEnableLight.Checked) ? 1 : 0;
+            ConfigData.BacklightOn = chkEnableLight.Checked ? 1 : 0;
             ConfigData.Save();
-            RGB = CalValue();
         }
 
-        private void RadioButton1_CheckedChanged(object sender, EventArgs e)
+        private void rbLightStatic_CheckedChanged(object sender, EventArgs e)
         {
-            ConfigData.Mode = !rbLightSingle.Checked ? 1 : 2;
-            ConfigData.Save();
-            RGB = CalValue();
+            if (rbLightStatic.Checked && Mode != LedModeState.Static)
+            {
+                Mode = LedModeState.Static;
+                LedColor = pbLightColor.BackColor;
+                ConfigData.Mode = 2;
+                ConfigData.Save();
+            }
         }
 
-        private void RadioButton2_CheckedChanged(object sender, EventArgs e)
+        private void rbLightDynamic_CheckedChanged(object sender, EventArgs e)
         {
+            Mode = LedModeState.Dynamic;
+            ConfigData.Mode = 1;
             ConfigData.Save();
-            RGB = CalValue();
         }
 
         private void CheckBox1_CheckedChanged(object sender, EventArgs e)
@@ -271,11 +286,8 @@ namespace LedControl
         {
             Bitmap original = (Bitmap)pbSelectColor.Image;
 
-            Color? color = null;
             if (pbSelectColor.SizeMode == PictureBoxSizeMode.Normal || pbSelectColor.SizeMode == PictureBoxSizeMode.AutoSize)
-            {
-                color = original.GetPixel(e.X, e.Y);
-            }
+                LedColor = original.GetPixel(e.X, e.Y);
             else
             {
                 Rectangle rectangle = (Rectangle)ImageRectangleProperty.GetValue(pbSelectColor, null);
@@ -285,18 +297,9 @@ namespace LedControl
                     using (Graphics g = Graphics.FromImage(copy))
                     {
                         g.DrawImage(pbSelectColor.Image, rectangle);
-                        color = copy.GetPixel(e.X, e.Y);
+                        LedColor = copy.GetPixel(e.X, e.Y);
                     }
                 }
-            }
-
-            if (color.HasValue)
-            {
-                pbLightColor.BackColor = color.Value;
-                ConfigData.SingleColorRGB = (color.Value.R << 16) | (color.Value.G << 8) | color.Value.B;
-                ConfigData.Save();
-                if (rbLightSingle.Checked)
-                    RGB = CalValue();
             }
         }
 
@@ -305,7 +308,7 @@ namespace LedControl
             if (CultureInfo.InstalledUICulture.NativeName.Substring(0, 2) == "中文")
             {
                 chkEnableLight.Text = "跑马灯";
-                rbLightSingle.Text = "单色模式";
+                rbLightStatic.Text = "单色模式";
                 rbLightDynamic.Text = "多彩模式";
                 chkDisableTP.Text = "关闭触摸板";
                 chkDustMode.Text = "除尘/高性能";
@@ -321,37 +324,50 @@ namespace LedControl
         }
 
         #region Mouse hook
-        public void HookMouseProcess(MouseHookLib.HookStruct hookStruct, out bool handle)
+        public bool HookMouseProcess(MouseHookLib.HookStruct hookStruct)
         {
-            handle = false;
             MouseHookLib.PointStruct point = hookStruct.point;
             if ((point.x < Left || point.x > Left + Width || point.y < Top || point.y > Top + Height) && point.y < Top + Height)
                 Visible = false;
+            return false;
         }
 
         private void InstallHookMouse()
         {
-            if (_mouseHook == null && !MouseHookInstalled)
+            if (_mouseHook == null)
             {
-                MouseHookInstalled = true;
                 _mouseHook = new MouseHookLib();
-                _mouseHook.InstallHook(new MouseHookLib.ProcessKeyHandle(HookMouseProcess));
+                _mouseHook.InstallHook(new MouseHookLib.ProcessMouseHandle(HookMouseProcess));
             }
         }
         public void UninstallHookMouse()
         {
-            MouseHookInstalled = false;
             if (_mouseHook != null)
+            {
                 _mouseHook.UninstallHook();
+                _mouseHook = null;
+            }
         }
         #endregion
 
-        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e) => Exit();
+
+        private void OpenToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Visible = true;
+        }
+
+        private void NotifyIcon_MouseClick(object sender, MouseEventArgs e)
+        {
+            Visible = true;
+        }
+
+        private void Exit()
         {
             UninstallHookMouse();
             acpi.AcpiUnLoadDll();
-            Dispose();
             Close();
+            Dispose();
         }
     }
 }

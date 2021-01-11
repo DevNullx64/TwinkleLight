@@ -14,7 +14,7 @@ namespace KbService
 {
     public class WinAPI_Interop
     {
-        public const int GENERIC_ALL_ACCESS = 268435456;
+        public const int GENERIC_ALL_ACCESS = 0x10000000;
         private const int TOKEN_QUERY = 8;
         private const int TOKEN_ADJUST_PRIVILEGES = 32;
         private const int SW_HIDE = 0;
@@ -23,8 +23,7 @@ namespace KbService
 
         public static void ShowServiceMessage(string message, string title)
         {
-            int pResponse = 0;
-            WTSSendMessage(WTS_CURRENT_SERVER_HANDLE, WTSGetActiveConsoleSessionId(), title, title.Length, message, message.Length, 0, 0, out pResponse, false);
+            WTSSendMessage(WTS_CURRENT_SERVER_HANDLE, WTSGetActiveConsoleSessionId(), title, title.Length, message, message.Length, 0, 0, out int pResponse, false);
         }
 
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -155,25 +154,23 @@ namespace KbService
 
         public static void CreateProcessAd(string app, StringBuilder path)
         {
-            IntPtr Token = WindowsIdentity.GetCurrent().Token;
             IntPtr zero = IntPtr.Zero;
-            PROCESS_INFORMATION lpProcessInformation = new PROCESS_INFORMATION();
             SECURITY_ATTRIBUTES lpThreadAttributes = new SECURITY_ATTRIBUTES();
-            lpThreadAttributes.Length = Marshal.SizeOf((object)lpThreadAttributes);
+            lpThreadAttributes.Length = Marshal.SizeOf(lpThreadAttributes);
             STARTUPINFO lpStartupInfo = new STARTUPINFO();
-            lpStartupInfo.cb = Marshal.SizeOf((object)lpStartupInfo);
+            lpStartupInfo.cb = Marshal.SizeOf(lpStartupInfo);
             lpStartupInfo.lpDesktop = "winsta0\\default";
-            WTSQueryUserToken(WTSGetActiveConsoleSessionId(), out Token);
-            IntPtr num = OpenProcess(2035711, false, Process.GetProcessesByName("winlogon")[0].Id);
-            if (!OpenProcessToken(num, 131563, ref Token))
+            WTSQueryUserToken(WTSGetActiveConsoleSessionId(), out IntPtr Token);
+            IntPtr num = OpenProcess(0x1F0FFF, false, Process.GetProcessesByName("winlogon")[0].Id);
+            if (!OpenProcessToken(num, 0x201EB, ref Token))
                 throw new Exception("Open Process Token fail");
-            if (!DuplicateTokenEx(Token, 268435456, ref lpThreadAttributes, 1, 1, ref zero))
+            if (!DuplicateTokenEx(Token, 0x10000000, ref lpThreadAttributes, 1, 1, ref zero))
                 ShowServiceMessage("DuplicateTokenEx failed", "AlertService Message");
-            IntPtr lpEnvironment = IntPtr.Zero;
-            if (!CreateEnvironmentBlock(out lpEnvironment, zero, false))
+
+            if (!CreateEnvironmentBlock(out IntPtr lpEnvironment, zero, false))
                 ShowServiceMessage("CreateEnvironmentBlock failed", "AlertService Message");
-            if (!CreateProcessAsUser(zero, app, path, IntPtr.Zero, IntPtr.Zero, false, 1024U, lpEnvironment, (string)null, ref lpStartupInfo, out lpProcessInformation))
-                ShowServiceMessage(string.Format("CreateProcessAsUser Error: {0}", (object)Marshal.GetLastWin32Error()), "AlertService Message");
+            if (!CreateProcessAsUser(zero, app, path, IntPtr.Zero, IntPtr.Zero, false, 0x400U, lpEnvironment, null, ref lpStartupInfo, out PROCESS_INFORMATION lpProcessInformation))
+                ShowServiceMessage(string.Format("CreateProcessAsUser Error: {0}", Marshal.GetLastWin32Error()), "AlertService Message");
             if (lpProcessInformation.hProcess != IntPtr.Zero)
                 CloseHandle(lpProcessInformation.hProcess);
             if (lpProcessInformation.hThread != IntPtr.Zero)
@@ -182,9 +179,8 @@ namespace KbService
                 CloseHandle(zero);
             if (Token != IntPtr.Zero)
                 CloseHandle(Token);
-            if (!(num != IntPtr.Zero))
-                return;
-            CloseHandle(num);
+            if (num != IntPtr.Zero)
+                CloseHandle(num);
         }
 
         private enum WTS_CONNECTSTATE_CLASS

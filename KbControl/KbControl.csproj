@@ -42,11 +42,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AcpiDriver.cs" />
-    <Compile Include="Icon.Designer.cs">
-      <DependentUpon>Icon.resx</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <Compile Include="KeyboardHookLib.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -55,24 +50,16 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MouseHookLib.cs" />
-    <Compile Include="Icon.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Properties\Resources_.cs" />
     <Compile Include="Properties\Settings.cs" />
     <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Icon.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Icon.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
