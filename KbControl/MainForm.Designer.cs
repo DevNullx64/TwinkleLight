@@ -1,7 +1,7 @@
 ﻿
 namespace LedControl
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,6 +30,7 @@ namespace LedControl
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
@@ -71,10 +72,12 @@ namespace LedControl
             // 
             this.pbSelectColor.BackColor = System.Drawing.Color.Transparent;
             this.pbSelectColor.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Stretch;
+            this.pbSelectColor.Image = ((System.Drawing.Image)(resources.GetObject("pbSelectColor.Image")));
             this.pbSelectColor.Location = new System.Drawing.Point(30, 14);
             this.pbSelectColor.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.pbSelectColor.Name = "pbSelectColor";
             this.pbSelectColor.Size = new System.Drawing.Size(131, 139);
+            this.pbSelectColor.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.pbSelectColor.TabIndex = 5;
             this.pbSelectColor.TabStop = false;
             this.pbSelectColor.MouseClick += new System.Windows.Forms.MouseEventHandler(this.PictureBox1_MouseClick);
@@ -176,7 +179,7 @@ namespace LedControl
             this.rbLightSingle.UseVisualStyleBackColor = true;
             this.rbLightSingle.CheckedChanged += new System.EventHandler(this.RadioButton1_CheckedChanged);
             // 
-            // Form1
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -185,7 +188,7 @@ namespace LedControl
             this.Controls.Add(this.pbSelectColor);
             this.Controls.Add(this.pnlOptions);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "Form1";
+            this.Name = "MainForm";
             this.Opacity = 0.7D;
             this.Text = "Main";
             this.TransparencyKey = System.Drawing.SystemColors.Control;

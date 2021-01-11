@@ -11,9 +11,9 @@ using System.Windows.Forms;
 
 namespace LedControl
 {
-  public class Icon : Form
+  public partial class Icon : Form
   {
-    public Form1 form1;
+    public MainForm form1;
     private KeyboardHookLib _keyboardHook;
     private bool KeyboardHookKeyInstalled;
     private IContainer components;
@@ -34,7 +34,7 @@ namespace LedControl
       this.notifyIcon1.Visible = true;
       this.TopMost = true;
       this.Visible = false;
-      this.form1 = new Form1();
+      this.form1 = new MainForm();
       this.form1.Show();
       this.InstallHookKey();
     }

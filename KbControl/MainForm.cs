@@ -4,18 +4,52 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Management;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 
 namespace LedControl
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
+        #region old interesting dead code
+        private const int AW_HOR_POSITIVE = 0x00000001;
+        private const int AW_HOR_NEGATIVE = 0x00000002;
+        private const int AW_VER_POSITIVE = 0x00000004;
+        private const int AW_VER_NEGATIVE = 0x00000008;
+        private const int AW_CENTER = 0x00000010;
+        private const int AW_HIDE = 0x00010000;
+        private const int AW_ACTIVE = 0x00020000;
+        private const int AW_SLIDE = 0x00040000;
+        private const int AW_BLEND = 0x00080000;
+
+        [DllImport("user32")]
+        private static extern bool AnimateWindow(IntPtr hwnd, int dwTime, int dwFlags);
+
+        public static Bitmap KiResizeImage(Bitmap bmp, int newW, int newH)
+        {
+            try
+            {
+                Bitmap bitmap = new Bitmap(newW, newH);
+                Graphics graphics = Graphics.FromImage((Image)bitmap);
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.DrawImage((Image)bmp, new Rectangle(0, 0, newW, newH), new Rectangle(0, 0, bmp.Width, bmp.Height), GraphicsUnit.Pixel);
+                graphics.Dispose();
+                return bitmap;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        #endregion
+
         private CONFIG_DATA ConfigData;
 
         public AcpiDriver acpi = new AcpiDriver();
@@ -45,7 +79,7 @@ namespace LedControl
             }
         }
 
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
         }
@@ -232,20 +266,37 @@ namespace LedControl
             ConfigData.Save();
         }
 
+        private static readonly PropertyInfo ImageRectangleProperty = typeof(PictureBox).GetProperty("ImageRectangle", BindingFlags.GetProperty | BindingFlags.NonPublic | BindingFlags.Instance);
         private void PictureBox1_MouseClick(object sender, MouseEventArgs e)
         {
-            Bitmap image = (Bitmap)pbSelectColor.Image;
-            try
+            Bitmap original = (Bitmap)pbSelectColor.Image;
+
+            Color? color = null;
+            if (pbSelectColor.SizeMode == PictureBoxSizeMode.Normal || pbSelectColor.SizeMode == PictureBoxSizeMode.AutoSize)
             {
-                pbLightColor.BackColor = image.GetPixel(e.X, e.Y);
-                Color backColor = pbLightColor.BackColor;
-                ConfigData.SingleColorRGB = (backColor.R << 16) | (backColor.G << 8) | backColor.B;
+                color = original.GetPixel(e.X, e.Y);
+            }
+            else
+            {
+                Rectangle rectangle = (Rectangle)ImageRectangleProperty.GetValue(pbSelectColor, null);
+                if (rectangle.Contains(e.Location))
+                {
+                    using (Bitmap copy = new Bitmap(pbSelectColor.ClientSize.Width, pbSelectColor.ClientSize.Height))
+                    using (Graphics g = Graphics.FromImage(copy))
+                    {
+                        g.DrawImage(pbSelectColor.Image, rectangle);
+                        color = copy.GetPixel(e.X, e.Y);
+                    }
+                }
+            }
+
+            if (color.HasValue)
+            {
+                pbLightColor.BackColor = color.Value;
+                ConfigData.SingleColorRGB = (color.Value.R << 16) | (color.Value.G << 8) | color.Value.B;
                 ConfigData.Save();
                 if (rbLightSingle.Checked)
                     RGB = CalValue();
-            }
-            catch
-            {
             }
         }
 
@@ -269,6 +320,7 @@ namespace LedControl
             Main_Shown(sender, e);
         }
 
+        #region Mouse hook
         public void HookMouseProcess(MouseHookLib.HookStruct hookStruct, out bool handle)
         {
             handle = false;
@@ -292,6 +344,7 @@ namespace LedControl
             if (_mouseHook != null)
                 _mouseHook.UninstallHook();
         }
+        #endregion
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
         {
