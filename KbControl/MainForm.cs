@@ -150,7 +150,7 @@ namespace LedControl
             try
             {
                 ConfigData = CONFIG_DATA.Load();
-                Color color = Color.FromArgb((int)ConfigData.SingleColorRGB);
+                Color color = Color.FromArgb(ConfigData.SingleColorRGB);
                 LedColor = color;
                 if (ConfigData.Mode == 1)
                 {
